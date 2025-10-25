@@ -17,10 +17,28 @@
 .business-card:hover, .event-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a;transform:translateY(-2px);}
 .modal-bg {background-color: rgba(0,0,0,0.6);}
 </style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC62Xj__IC8udCYl0iz92DqSXbM5UB1kAA",
+    authDomain: "kinyawaeventplanner.firebaseapp.com",
+    projectId: "kinyawaeventplanner",
+    storageBucket: "kinyawaeventplanner.firebasestorage.app",
+    messagingSenderId: "879245734617",
+    appId: "1:879245734617:web:ea51cfdbfae5ab6f4b44c8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  window.firebaseAuth = auth;
+</script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-<!-- Hero -->
+<!-- Hero Section -->
 <section class="relative h-[50vh] flex items-center justify-center text-center bg-cover bg-center" style="background-image: url('kinyawa.png');">
   <div class="absolute inset-0 bg-black bg-opacity-50"></div>
   <div class="relative z-10 text-white" data-aos="fade-up">
@@ -30,8 +48,6 @@
 </section>
 
 <main class="max-w-5xl mx-auto p-6">
-
-<!-- Search Filter -->
 <div class="mb-6">
   <input type="text" id="searchInput" placeholder="Search events or businesses..." class="w-full p-2 border rounded" />
 </div>
@@ -78,21 +94,14 @@
   <p class="text-sm">🌐 <a href="https://kopirato.github.io/Seltec/" class="text-green-400 hover:text-green-500" target="_blank">kopirato.github.io/Seltec/</a></p>
 </footer>
 
-<script>
-AOS.init();
-
-// Admin credentials
-const admins = [
-  {email: "admin1@example.com", password: "adminpass1"},
-  {email: "admin2@example.com", password: "adminpass2"}
-];
+<script type="module">
+import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+const auth = window.firebaseAuth;
 
 let events = JSON.parse(localStorage.getItem('events')) || [];
 let businesses = JSON.parse(localStorage.getItem('businesses')) || [];
+let currentAction = null;
 
-let currentAction = null; // store the action waiting for admin confirmation
-
-// Show modal and handle login
 function requireAdmin(action){
   currentAction = action;
   document.getElementById('adminModal').classList.remove('hidden');
@@ -108,19 +117,19 @@ document.getElementById('cancelAdmin').addEventListener('click', ()=>{
 document.getElementById('submitAdmin').addEventListener('click', ()=>{
   const email = document.getElementById('adminEmail').value;
   const password = document.getElementById('adminPassword').value;
-  const valid = admins.some(a=>a.email===email && a.password===password);
-  if(valid){
-    document.getElementById('adminModal').classList.add('hidden');
-    document.getElementById('adminEmail').value = '';
-    document.getElementById('adminPassword').value = '';
-    if(currentAction) currentAction();
-    currentAction = null;
-  } else {
-    alert("Invalid admin credentials!");
-  }
+  signInWithEmailAndPassword(auth,email,password)
+    .then(()=> {
+      document.getElementById('adminModal').classList.add('hidden');
+      document.getElementById('adminEmail').value = '';
+      document.getElementById('adminPassword').value = '';
+      if(currentAction) currentAction();
+      currentAction = null;
+      signOut(auth); // optional sign out after action
+    })
+    .catch(()=>{alert("Invalid admin credentials!");});
 });
 
-// Display functions
+// Display and manage events
 function displayEvents(filter=''){
   const eventList = document.getElementById('eventList');
   eventList.innerHTML = '';
@@ -128,9 +137,9 @@ function displayEvents(filter=''){
         .sort((a,b)=>new Date(a.date)-new Date(b.date))
         .forEach((e, idx)=>{
     const div = document.createElement('div');
-    div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
+    div.className='p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
     div.setAttribute('data-aos','fade-up');
-    div.innerHTML = `
+    div.innerHTML=`
       <h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
       <p class='text-sm text-gray-600'><strong>Date:</strong> ${e.date}</p>
       <p class='text-sm text-gray-600'><strong>Location:</strong> ${e.location}</p>
@@ -144,19 +153,20 @@ function displayEvents(filter=''){
 
 function deleteEvent(idx){
   events.splice(idx,1);
-  localStorage.setItem('events', JSON.stringify(events));
+  localStorage.setItem('events',JSON.stringify(events));
   displayEvents(document.getElementById('searchInput').value);
 }
 
+// Display businesses
 function displayBusinesses(filter=''){
   const businessList = document.getElementById('businessList');
-  businessList.innerHTML = '';
+  businessList.innerHTML='';
   businesses.filter(b=>b.name.toLowerCase().includes(filter.toLowerCase()))
-            .forEach((b, idx)=>{
+            .forEach((b,idx)=>{
     const div = document.createElement('div');
-    div.className = 'p-4 bg-white shadow rounded business-card';
+    div.className='p-4 bg-white shadow rounded business-card';
     div.setAttribute('data-aos','fade-up');
-    div.innerHTML = `
+    div.innerHTML=`
       <h3 class='text-xl font-semibold'>${b.name}</h3>
       <p>${b.type} • ${b.location}</p>
       <p>${b.contact}</p>
@@ -171,53 +181,44 @@ function displayBusinesses(filter=''){
 
 function deleteBusiness(idx){
   businesses.splice(idx,1);
-  localStorage.setItem('businesses', JSON.stringify(businesses));
+  localStorage.setItem('businesses',JSON.stringify(businesses));
   displayBusinesses(document.getElementById('searchInput').value);
 }
 
 // Forms
-document.getElementById('eventForm').addEventListener('submit', e=>{
+document.getElementById('eventForm').addEventListener('submit',e=>{
   e.preventDefault();
   requireAdmin(()=>{
     events.push({
-      name: e.target.eventName.value,
-      date: e.target.eventDate.value,
-      location: e.target.eventLocation.value,
-      description: e.target.eventDescription.value
+      name:e.target.eventName.value,
+      date:e.target.eventDate.value,
+      location:e.target.eventLocation.value,
+      description:e.target.eventDescription.value
     });
-    localStorage.setItem('events', JSON.stringify(events));
+    localStorage.setItem('events',JSON.stringify(events));
     displayEvents(document.getElementById('searchInput').value);
     e.target.reset();
   });
 });
 
-document.getElementById('businessForm').addEventListener('submit', e=>{
+document.getElementById('businessForm').addEventListener('submit',e=>{
   e.preventDefault();
   requireAdmin(()=>{
     businesses.push({
-      name: e.target.businessName.value,
-      type: e.target.businessType.value,
-      location: e.target.businessLocation.value,
-      contact: e.target.businessContact.value,
-      email: e.target.businessEmail.value,
-      description: e.target.businessDescription.value
+      name:e.target.businessName.value,
+      type:e.target.businessType.value,
+      location:e.target.businessLocation.value,
+      contact:e.target.businessContact.value,
+      email:e.target.businessEmail.value,
+      description:e.target.businessDescription.value
     });
-    localStorage.setItem('businesses', JSON.stringify(businesses));
+    localStorage.setItem('businesses',JSON.stringify(businesses));
     displayBusinesses(document.getElementById('searchInput').value);
     e.target.reset();
   });
 });
 
-// Search
-document.getElementById('searchInput').addEventListener('input', e=>{
-  const term = e.target.value.toLowerCase();
+// Search filter
+document.getElementById('searchInput').addEventListener('input',e=>{
+  const term=e.target.value.toLowerCase();
   displayEvents(term);
-  displayBusinesses(term);
-});
-
-// Initial display
-displayEvents();
-displayBusinesses();
-</script>
-</body>
-</html>
