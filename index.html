@@ -3,134 +3,104 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KINYAWA EVENT PLANNER</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-  <script defer>
-    document.addEventListener('DOMContentLoaded', () => {
-      const eventForm = document.getElementById('eventForm');
-      const businessForm = document.getElementById('businessForm');
-      const eventsList = document.getElementById('eventsList');
-      const businessesList = document.getElementById('businessesList');
-      let events = JSON.parse(localStorage.getItem('kinyawaEvents') || '[]');
-      let businesses = JSON.parse(localStorage.getItem('kinyawaBusinesses') || '[]');function saveData() {
-    localStorage.setItem('kinyawaEvents', JSON.stringify(events));
-    localStorage.setItem('kinyawaBusinesses', JSON.stringify(businesses));
-  }
-
-  function renderEvents() {
-    eventsList.innerHTML = '';
-    events.forEach((ev, i) => {
-      const card = document.createElement('div');
-      card.className = 'bg-white shadow-md p-4 rounded-xl mb-3';
-      card.innerHTML = `
-        <h3 class='text-xl font-semibold text-green-700'>${ev.title}</h3>
-        <p><strong>Date:</strong> ${ev.date}</p>
-        <p><strong>Location:</strong> ${ev.location}</p>
-        <p><strong>Type:</strong> ${ev.type}</p>
-        <p><strong>Description:</strong> ${ev.description}</p>
-        <p><a href='https://www.google.com/maps/search/${encodeURIComponent(ev.location)}' target='_blank' class='text-blue-600 underline'>View on Map</a></p>
-        <button onclick='deleteEvent(${i})' class='bg-red-500 text-white px-2 py-1 rounded mt-2'>Delete</button>
-      `;
-      eventsList.appendChild(card);
-    });
-  }
-
-  function renderBusinesses() {
-    businessesList.innerHTML = '';
-    businesses.forEach((b, i) => {
-      const card = document.createElement('div');
-      card.className = 'bg-yellow-50 shadow-md p-4 rounded-xl mb-3';
-      card.innerHTML = `
-        <h3 class='text-xl font-semibold text-yellow-800'>${b.name}</h3>
-        <p><strong>Type:</strong> ${b.type}</p>
-        <p><strong>Location:</strong> ${b.location}</p>
-        <p><strong>Contact:</strong> ${b.contact}</p>
-        <p>${b.description}</p>
-        <p><a href='https://www.google.com/maps/search/${encodeURIComponent(b.location)}' target='_blank' class='text-blue-600 underline'>View on Map</a></p>
-        <button onclick='deleteBusiness(${i})' class='bg-red-500 text-white px-2 py-1 rounded mt-2'>Delete</button>
-      `;
-      businessesList.appendChild(card);
-    });
-  }
-
-  eventForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(eventForm).entries());
-    events.push(data);
-    saveData();
-    renderEvents();
-    eventForm.reset();
-  });
-
-  businessForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(businessForm).entries());
-    businesses.push(data);
-    saveData();
-    renderBusinesses();
-    businessForm.reset();
-  });
-
-  window.deleteEvent = i => {
-    events.splice(i, 1);
-    saveData();
-    renderEvents();
-  }
-
-  window.deleteBusiness = i => {
-    businesses.splice(i, 1);
-    saveData();
-    renderBusinesses();
-  }
-
-  renderEvents();
-  renderBusinesses();
-});
-
-  </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-green-50 text-gray-800 min-h-screen">
-  <header class="bg-green-700 text-white text-center py-6">
-    <h1 class="text-3xl font-bold">KINYAWA EVENT PLANNER</h1>
-    <p class="text-sm">Community Events & Local Business Listings</p>
-  </header>  <main class="max-w-3xl mx-auto py-6 px-4">
-    <section class="mb-10">
-      <h2 class="text-2xl font-bold text-green-700 mb-3">Add New Event</h2>
-      <form id="eventForm" class="grid gap-3">
-        <input name="title" placeholder="Event Title (e.g. Youth Forum, Church Meeting)" class="border p-2 rounded" required />
-        <input name="date" type="datetime-local" class="border p-2 rounded" required />
-        <input name="location" placeholder="Event Location (e.g. Kinyawa Grounds)" class="border p-2 rounded" required />
-        <input name="type" placeholder="Event Type (e.g. Wedding, Sacco AGM, Market Day)" class="border p-2 rounded" />
-        <textarea name="description" placeholder="Short Description" class="border p-2 rounded"></textarea>
-        <button class="bg-green-700 text-white p-2 rounded">Add Event</button>
-      </form>
-    </section><section>
-  <h2 class="text-2xl font-bold text-green-700 mb-3">Upcoming & Past Events</h2>
-  <div id="eventsList"></div>
-</section>
+<body class="bg-gray-50 text-gray-800">  <!-- Hero Section -->  <section class="relative h-[50vh] flex items-center justify-center text-center bg-cover bg-center" style="background-image: url('kinyawa.png');">
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative z-10 text-white" data-aos="fade-up">
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide mb-2">KINYAWA NANYORR</h1>
+      <p class="text-lg md:text-xl font-light">Uniting Our Community Through Events & Local Business</p>
+    </div>
+  </section>  <!-- Main Content -->  <main class="max-w-5xl mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
+    <div id="eventList" class="grid gap-4"></div><form id="eventForm" class="mt-6 space-y-3">
+  <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
+  <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
+  <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
+  <textarea id="eventDescription" placeholder="Description" class="w-full p-2 border rounded"></textarea>
+  <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Event</button>
+</form>
 
-<hr class="my-10 border-green-300" />
+<h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
+<div id="businessList" class="grid gap-4"></div>
 
-<section class="mb-10">
-  <h2 class="text-2xl font-bold text-yellow-700 mb-3">Add Local Business</h2>
-  <form id="businessForm" class="grid gap-3">
-    <input name="name" placeholder="Business Name" class="border p-2 rounded" required />
-    <input name="type" placeholder="Type (e.g. Salon, Hardware, Boda, Shop)" class="border p-2 rounded" />
-    <input name="location" placeholder="Location (e.g. Kinyawa Market)" class="border p-2 rounded" required />
-    <input name="contact" placeholder="Contact (Phone/WhatsApp)" class="border p-2 rounded" />
-    <textarea name="description" placeholder="Short Description (services offered)" class="border p-2 rounded"></textarea>
-    <button class="bg-yellow-700 text-white p-2 rounded">Add Business</button>
-  </form>
-</section>
+<form id="businessForm" class="mt-6 space-y-3">
+  <input type="text" id="businessName" placeholder="Business Name" class="w-full p-2 border rounded" required />
+  <input type="text" id="businessType" placeholder="Business Type (e.g., salon, shop)" class="w-full p-2 border rounded" />
+  <input type="text" id="businessLocation" placeholder="Location" class="w-full p-2 border rounded" />
+  <input type="text" id="businessContact" placeholder="Contact Info" class="w-full p-2 border rounded" />
+  <textarea id="businessDescription" placeholder="Short Description" class="w-full p-2 border rounded"></textarea>
+  <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Add Business</button>
+</form>
 
-<section>
-  <h2 class="text-2xl font-bold text-yellow-700 mb-3">Featured Local Businesses</h2>
-  <div id="businessesList"></div>
-</section>
+  </main>  <script>
+    AOS.init();
 
-  </main>  <footer class="bg-green-700 text-white text-center py-4 mt-10">
-    <p>&copy; 2025 Kinyawa Event Planner — Empowering Our Community</p>
-  </footer>
-</body>
+    const eventForm = document.getElementById('eventForm');
+    const eventList = document.getElementById('eventList');
+    let events = JSON.parse(localStorage.getItem('events')) || [];
+
+    function displayEvents() {
+      eventList.innerHTML = '';
+      events.sort((a, b) => new Date(a.date) - new Date(b.date));
+      events.forEach((e, index) => {
+        const div = document.createElement('div');
+        div.className = 'p-4 bg-white shadow rounded hover:shadow-lg transition';
+        div.innerHTML = `<h3 class='text-xl font-semibold'>${e.name}</h3><p>${e.date} • ${e.location}</p><p>${e.description}</p>`;
+        eventList.appendChild(div);
+      });
+    }
+
+    eventForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const newEvent = {
+        name: eventForm.eventName.value,
+        date: eventForm.eventDate.value,
+        location: eventForm.eventLocation.value,
+        description: eventForm.eventDescription.value
+      };
+      events.push(newEvent);
+      localStorage.setItem('events', JSON.stringify(events));
+      eventForm.reset();
+      displayEvents();
+    });
+
+    displayEvents();
+
+    const businessForm = document.getElementById('businessForm');
+    const businessList = document.getElementById('businessList');
+    let businesses = JSON.parse(localStorage.getItem('businesses')) || [];
+
+    function displayBusinesses() {
+      businessList.innerHTML = '';
+      businesses.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'p-4 bg-white shadow rounded hover:shadow-lg transition';
+        div.innerHTML = `<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.description}</p>`;
+        businessList.appendChild(div);
+      });
+    }
+
+    businessForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const newBusiness = {
+        name: businessForm.businessName.value,
+        type: businessForm.businessType.value,
+        location: businessForm.businessLocation.value,
+        contact: businessForm.businessContact.value,
+        description: businessForm.businessDescription.value
+      };
+      businesses.push(newBusiness);
+      localStorage.setItem('businesses', JSON.stringify(businesses));
+      businessForm.reset();
+      displayBusinesses();
+    });
+
+    displayBusinesses();
+  </script></body>
 </html>
