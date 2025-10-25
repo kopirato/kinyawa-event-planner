@@ -46,6 +46,18 @@
   </footer>  <script>
     AOS.init();
 
+    const allowedNumbers = ["0724484459", "0742147197"];
+
+    function authorize() {
+      const phone = prompt('Enter your phone number to continue:');
+      if (allowedNumbers.includes(phone)) {
+        return true;
+      } else {
+        alert('You’re not authorized to make changes.');
+        return false;
+      }
+    }
+
     const eventForm = document.getElementById('eventForm');
     const eventList = document.getElementById('eventList');
     const filterInput = document.getElementById('filterInput');
@@ -78,6 +90,7 @@
     }
 
     function deleteEvent(index) {
+      if (!authorize()) return;
       events.splice(index, 1);
       localStorage.setItem('events', JSON.stringify(events));
       displayEvents(filterInput.value);
@@ -85,6 +98,7 @@
 
     eventForm.addEventListener('submit', e => {
       e.preventDefault();
+      if (!authorize()) return;
       const newEvent = {
         name: eventForm.eventName.value,
         date: eventForm.eventDate.value,
@@ -107,16 +121,32 @@
 
     function displayBusinesses() {
       businessList.innerHTML = '';
-      businesses.forEach(b => {
+      businesses.forEach((b, index) => {
         const div = document.createElement('div');
         div.className = 'p-4 bg-white shadow rounded hover:shadow-lg transition';
-        div.innerHTML = `<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.description}</p>`;
+        div.innerHTML = `
+          <h3 class='text-xl font-semibold'>${b.name}</h3>
+          <p>${b.type} • ${b.location}</p>
+          <p>${b.contact}</p>
+          <p>${b.description}</p>
+          <div class='flex justify-end mt-2'>
+            <button onclick='deleteBusiness(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
+          </div>
+        `;
         businessList.appendChild(div);
       });
     }
 
+    function deleteBusiness(index) {
+      if (!authorize()) return;
+      businesses.splice(index, 1);
+      localStorage.setItem('businesses', JSON.stringify(businesses));
+      displayBusinesses();
+    }
+
     businessForm.addEventListener('submit', e => {
       e.preventDefault();
+      if (!authorize()) return;
       const newBusiness = {
         name: businessForm.businessName.value,
         type: businessForm.businessType.value,
