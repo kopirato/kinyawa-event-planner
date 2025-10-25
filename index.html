@@ -17,8 +17,12 @@
       <p class="text-lg md:text-xl font-light">Uniting Our Community Through Events & Local Business</p>
     </div>
   </section>  <!-- Main Content -->  <main class="max-w-5xl mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
-    <div id="eventList" class="grid gap-4"></div><form id="eventForm" class="mt-6 space-y-3">
+    <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2><!-- Filter Input -->
+<input type="text" id="filterInput" placeholder="Search events by name or location..." class="w-full p-2 border rounded mb-4" />
+
+<div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+<form id="eventForm" class="mt-6 space-y-3">
   <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
   <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
   <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
@@ -43,18 +47,46 @@
 
     const eventForm = document.getElementById('eventForm');
     const eventList = document.getElementById('eventList');
+    const filterInput = document.getElementById('filterInput');
     let events = JSON.parse(localStorage.getItem('events')) || [];
 
-    function displayEvents() {
+    function displayEvents(filter = '') {
       eventList.innerHTML = '';
-      events.sort((a, b) => new Date(a.date) - new Date(b.date));
-      events.forEach((e, index) => {
+      const filteredEvents = events.filter(e => 
+        e.name.toLowerCase().includes(filter.toLowerCase()) || 
+        e.location.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      filteredEvents.forEach((e, index) => {
         const div = document.createElement('div');
-        div.className = 'p-4 bg-white shadow rounded hover:shadow-lg transition';
-        div.innerHTML = `<h3 class='text-xl font-semibold'>${e.name}</h3><p>${e.date} • ${e.location}</p><p>${e.description}</p>`;
+        div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300';
+        div.setAttribute('data-aos', 'fade-up');
+        div.innerHTML = `
+          <div class='mb-3'>
+            <h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
+            <p class='text-sm text-gray-600'><strong>Date:</strong> ${e.date}</p>
+            <p class='text-sm text-gray-600'><strong>Location:</strong> ${e.location}</p>
+          </div>
+          <p class='text-gray-700 mb-3'>${e.description}</p>
+          <div class='flex justify-end'>
+            <button onclick='deleteEvent(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
+          </div>
+        `;
         eventList.appendChild(div);
       });
     }
+
+    function deleteEvent(index) {
+      events.splice(index, 1);
+      localStorage.setItem('events', JSON.stringify(events));
+      displayEvents(filterInput.value);
+    }
+
+    filterInput.addEventListener('input', e => {
+      displayEvents(e.target.value);
+    });
 
     eventForm.addEventListener('submit', e => {
       e.preventDefault();
@@ -67,7 +99,7 @@
       events.push(newEvent);
       localStorage.setItem('events', JSON.stringify(events));
       eventForm.reset();
-      displayEvents();
+      displayEvents(filterInput.value);
     });
 
     displayEvents();
@@ -103,4 +135,4 @@
 
     displayBusinesses();
   </script></body>
-</html>
+    </html>
