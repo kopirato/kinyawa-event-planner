@@ -1,19 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KINYAWA EVENT PLANNER</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-  <style>
-    @keyframes neonPulse {0%,100%{box-shadow:0 0 5px #16a34a,0 0 10px #16a34a,0 0 20px #16a34a;}50%{box-shadow:0 0 15px #16a34a,0 0 30px #16a34a,0 0 45px #16a34a;}}
-    .glow-active {animation: neonPulse 2s infinite;}
-    .hover-glow:hover {box-shadow:0 0 12px #16a34a,0 0 20px #16a34a; transition:box-shadow 0.3s ease-in-out;}
-    .business-card {transition:box-shadow 0.3s ease-in-out,transform 0.3s ease-in-out;}
-    .business-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a,0 0 30px #16a34a;transform:translateY(-2px);}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KINYAWA EVENT PLANNER</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+<style>
+/* Neon pulsing glow effect for buttons */
+@keyframes neonPulse {
+  0%,100%{box-shadow:0 0 5px #16a34a,0 0 10px #16a34a,0 0 20px #16a34a;}
+  50%{box-shadow:0 0 15px #16a34a,0 0 30px #16a34a,0 0 45px #16a34a;}
+}
+.glow-active {animation: neonPulse 2s infinite;}
+.hover-glow:hover {box-shadow:0 0 12px #16a34a,0 0 20px #16a34a; transition:box-shadow 0.3s ease-in-out;}
+.business-card, .event-card {transition:box-shadow 0.3s ease-in-out,transform 0.3s ease-in-out;}
+.business-card:hover, .event-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a,0 0 30px #16a34a;transform:translateY(-2px);}
+</style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
@@ -26,55 +30,31 @@
   </div>
 </section>
 
-<!-- Main -->
 <main class="max-w-5xl mx-auto p-6">
-  <!-- Events -->
-  <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
-  <div class="flex flex-col md:flex-row md:items-center md:space-x-3 space-y-3 md:space-y-0 mb-4">
-    <input type="text" id="searchInput" placeholder="Search events" class="w-full md:w-1/2 p-2 border rounded" />
-    <select id="monthFilter" class="w-full md:w-1/3 p-2 border rounded">
-      <option value="">Filter by Month</option>
-      <option value="0">January</option><option value="1">February</option>
-      <option value="2">March</option><option value="3">April</option>
-      <option value="4">May</option><option value="5">June</option>
-      <option value="6">July</option><option value="7">August</option>
-      <option value="8">September</option><option value="9">October</option>
-      <option value="10">November</option><option value="11">December</option>
-    </select>
-    <button id="clearFilters" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm hover-glow">Clear Filters</button>
-  </div>
-  <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-  <form id="eventForm" class="mt-6 space-y-3">
-    <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
-    <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
-    <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
-    <textarea id="eventDescription" placeholder="Description" class="w-full p-2 border rounded"></textarea>
-    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Event</button>
-  </form>
+<!-- Events Section -->
+<h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
+<div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
+<form id="eventForm" class="mt-6 space-y-3">
+  <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
+  <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
+  <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
+  <textarea id="eventDescription" placeholder="Description" class="w-full p-2 border rounded"></textarea>
+  <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded glow-active">Add Event</button>
+</form>
 
-  <!-- Businesses -->
-  <h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
-  <div class="flex flex-col md:flex-row md:items-center md:space-x-3 space-y-3 md:space-y-0 mb-4">
-    <input type="text" id="businessSearch" placeholder="Search businesses" class="w-full md:w-1/2 p-2 border rounded" />
-    <select id="businessSort" class="w-full md:w-1/3 p-2 border rounded">
-      <option value="">Sort by Type</option>
-      <option value="salon">Salon</option><option value="shop">Shop</option>
-      <option value="eatery">Eatery</option><option value="transport">Transport</option>
-      <option value="other">Other</option>
-    </select>
-  </div>
-  <div id="businessList" class="grid gap-4"></div>
-
-  <form id="businessForm" class="mt-6 space-y-3">
-    <input type="text" id="businessName" placeholder="Business Name" class="w-full p-2 border rounded" required />
-    <input type="text" id="businessType" placeholder="Business Type" class="w-full p-2 border rounded" />
-    <input type="text" id="businessLocation" placeholder="Location" class="w-full p-2 border rounded" />
-    <input type="text" id="businessContact" placeholder="Contact Info" class="w-full p-2 border rounded" />
-    <input type="text" id="businessEmail" placeholder="Email (optional)" class="w-full p-2 border rounded" />
-    <textarea id="businessDescription" placeholder="Short Description" class="w-full p-2 border rounded"></textarea>
-    <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Add Business</button>
-  </form>
+<!-- Businesses Section -->
+<h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
+<div id="businessList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
+<form id="businessForm" class="mt-6 space-y-3">
+  <input type="text" id="businessName" placeholder="Business Name" class="w-full p-2 border rounded" required />
+  <input type="text" id="businessType" placeholder="Business Type" class="w-full p-2 border rounded" />
+  <input type="text" id="businessLocation" placeholder="Location" class="w-full p-2 border rounded" />
+  <input type="text" id="businessContact" placeholder="Contact Info" class="w-full p-2 border rounded" />
+  <input type="text" id="businessEmail" placeholder="Email (optional)" class="w-full p-2 border rounded" />
+  <textarea id="businessDescription" placeholder="Short Description" class="w-full p-2 border rounded"></textarea>
+  <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded glow-active">Add Business</button>
+</form>
 </main>
 
 <!-- Footer -->
@@ -95,7 +75,6 @@
   </div>
 </div>
 
-<!-- Firebase + App Logic -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
@@ -114,7 +93,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Admin login modal
+// Admin modal elements
 const loginModal = document.getElementById('loginModal');
 const loginBtn = document.getElementById('loginBtn');
 const loginEmail = document.getElementById('loginEmail');
@@ -130,18 +109,19 @@ loginBtn.addEventListener('click', ()=>{
     .catch(err=>{ loginError.textContent=err.message; loginError.classList.remove('hidden'); });
 });
 
-// Admin action wrapper
 function adminAction(callback){ if(auth.currentUser) callback(); else showLoginModal(); }
 
 // Events
 const eventForm = document.getElementById('eventForm');
 let events = JSON.parse(localStorage.getItem('events'))||[];
+
 function displayEvents(){
   const eventList = document.getElementById('eventList'); eventList.innerHTML='';
   events.sort((a,b)=>new Date(a.date)-new Date(b.date));
   events.forEach((e,idx)=>{
     const div=document.createElement('div');
-    div.className='p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300';
+    div.className='p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
+    div.setAttribute('data-aos','fade-up');
     div.innerHTML=`<h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
       <p class='text-sm text-gray-600'><strong>Date:</strong> ${e.date}</p>
       <p class='text-sm text-gray-600'><strong>Location:</strong> ${e.location}</p>
@@ -157,10 +137,13 @@ displayEvents();
 // Businesses
 const businessForm=document.getElementById('businessForm');
 let businesses=JSON.parse(localStorage.getItem('businesses'))||[];
-function displayBusinesses(){ const businessList=document.getElementById('businessList'); businessList.innerHTML='';
+
+function displayBusinesses(){
+  const businessList=document.getElementById('businessList'); businessList.innerHTML='';
   businesses.forEach((b,idx)=>{
     const div=document.createElement('div');
     div.className='p-4 bg-white shadow rounded business-card';
+    div.setAttribute('data-aos','fade-up');
     div.innerHTML=`<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.email||''}</p><p>${b.description}</p>
       <div class='flex justify-end'><button onclick='deleteBusiness(${idx})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button></div>`;
     businessList.appendChild(div);
@@ -170,7 +153,7 @@ function deleteBusiness(idx){ adminAction(()=>{ businesses.splice(idx,1); localS
 businessForm.addEventListener('submit',e=>{ e.preventDefault(); adminAction(()=>{ businesses.push({name:businessForm.businessName.value,type:businessForm.businessType.value,location:businessForm.businessLocation.value,contact:businessForm.businessContact.value,email:businessForm.businessEmail.value,description:businessForm.businessDescription.value}); localStorage.setItem('businesses',JSON.stringify(businesses)); displayBusinesses(); businessForm.reset(); }); });
 displayBusinesses();
 
-// Admin Logout button
+// Admin Logout
 const logoutBtn=document.createElement('button'); logoutBtn.textContent="Logout"; logoutBtn.className="fixed top-4 right-4 bg-red-600 text-white px-3 py-1 rounded hidden"; document.body.appendChild(logoutBtn);
 onAuthStateChanged(auth,user=>{ if(user) logoutBtn.classList.remove('hidden'); else logoutBtn.classList.add('hidden'); });
 logoutBtn.addEventListener('click',()=>{ signOut(auth).then(()=>alert('Admin logged out')); });
@@ -179,4 +162,4 @@ logoutBtn.addEventListener('click',()=>{ signOut(auth).then(()=>alert('Admin log
 AOS.init();
 </script>
 </body>
-</html>
+    </html>
