@@ -15,6 +15,7 @@
 .glow-active {animation: neonPulse 2s infinite;}
 .business-card, .event-card {transition:box-shadow 0.3s ease, transform 0.3s ease;}
 .business-card:hover, .event-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a;transform:translateY(-2px);}
+.modal-bg {background-color: rgba(0,0,0,0.6);}
 </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -58,79 +59,126 @@
 </form>
 </main>
 
+<!-- Admin Modal -->
+<div id="adminModal" class="fixed inset-0 hidden items-center justify-center modal-bg z-50">
+  <div class="bg-white rounded-xl p-6 w-80 shadow-lg relative" data-aos="fade-up">
+    <h2 class="text-xl font-bold mb-4">Admin Login</h2>
+    <input type="email" id="adminEmail" placeholder="Email" class="w-full mb-3 p-2 border rounded" />
+    <input type="password" id="adminPassword" placeholder="Password" class="w-full mb-4 p-2 border rounded" />
+    <div class="flex justify-end space-x-2">
+      <button id="cancelAdmin" class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white">Cancel</button>
+      <button id="submitAdmin" class="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white">Submit</button>
+    </div>
+  </div>
+</div>
+
 <footer class="bg-gray-900 text-gray-200 mt-10 py-6 text-center">
   <p class="text-sm">Proudly created by <span class="font-semibold">Seltec Technologies</span></p>
   <p class="text-sm">📞 0742147197 | ✉️ <a href="mailto:davidkop18@gmail.com" class="underline">davidkop18@gmail.com</a></p>
   <p class="text-sm">🌐 <a href="https://kopirato.github.io/Seltec/" class="text-green-400 hover:text-green-500" target="_blank">kopirato.github.io/Seltec/</a></p>
 </footer>
 
-<!-- Admin Login Modal -->
-<div id="loginModal" class="fixed inset-0 hidden bg-black bg-opacity-60 flex items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-    <h2 class="text-lg font-bold mb-2">Admin Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email" class="w-full border p-2 rounded mb-2" />
-    <input type="password" id="loginPassword" placeholder="Password" class="w-full border p-2 rounded mb-4" />
-    <button id="loginBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-2 w-full">Login</button>
-    <p id="loginError" class="text-red-500 text-sm hidden"></p>
-  </div>
-</div>
+<script>
+AOS.init();
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC62Xj__IC8udCYl0iz92DqSXbM5UB1kAA",
-  authDomain: "kinyawaeventplanner.firebaseapp.com",
-  projectId: "kinyawaeventplanner",
-  storageBucket: "kinyawaeventplanner.firebasestorage.app",
-  messagingSenderId: "879245734617",
-  appId: "1:879245734617:web:ea51cfdbfae5ab6f4b44c8"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-const loginModal = document.getElementById('loginModal');
-const loginBtn = document.getElementById('loginBtn');
-const loginEmail = document.getElementById('loginEmail');
-const loginPassword = document.getElementById('loginPassword');
-const loginError = document.getElementById('loginError');
-
-function showLoginModal(){ loginModal.classList.remove('hidden'); }
-function hideLoginModal(){ loginModal.classList.add('hidden'); loginError.classList.add('hidden'); }
-
-loginBtn.addEventListener('click', ()=>{
-  signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value.trim())
-    .then(()=>{ hideLoginModal(); alert('Admin logged in!'); updateUI(); })
-    .catch(err=>{ loginError.textContent=err.message; loginError.classList.remove('hidden'); });
-});
+// Admin credentials
+const admins = [
+  {email: "admin1@example.com", password: "adminpass1"},
+  {email: "admin2@example.com", password: "adminpass2"}
+];
 
 let events = JSON.parse(localStorage.getItem('events')) || [];
 let businesses = JSON.parse(localStorage.getItem('businesses')) || [];
 
-function adminAction(callback){ if(auth.currentUser) callback(); else showLoginModal(); }
+let currentAction = null; // store the action waiting for admin confirmation
 
+// Show modal and handle login
+function requireAdmin(action){
+  currentAction = action;
+  document.getElementById('adminModal').classList.remove('hidden');
+}
+
+document.getElementById('cancelAdmin').addEventListener('click', ()=>{
+  document.getElementById('adminModal').classList.add('hidden');
+  currentAction = null;
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPassword').value = '';
+});
+
+document.getElementById('submitAdmin').addEventListener('click', ()=>{
+  const email = document.getElementById('adminEmail').value;
+  const password = document.getElementById('adminPassword').value;
+  const valid = admins.some(a=>a.email===email && a.password===password);
+  if(valid){
+    document.getElementById('adminModal').classList.add('hidden');
+    document.getElementById('adminEmail').value = '';
+    document.getElementById('adminPassword').value = '';
+    if(currentAction) currentAction();
+    currentAction = null;
+  } else {
+    alert("Invalid admin credentials!");
+  }
+});
+
+// Display functions
 function displayEvents(filter=''){
-  const eventList = document.getElementById('eventList'); eventList.innerHTML = '';
-  events.filter(e=>e.name.toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach((e,idx)=>{
+  const eventList = document.getElementById('eventList');
+  eventList.innerHTML = '';
+  events.filter(e=>e.name.toLowerCase().includes(filter.toLowerCase()))
+        .sort((a,b)=>new Date(a.date)-new Date(b.date))
+        .forEach((e, idx)=>{
     const div = document.createElement('div');
     div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
     div.setAttribute('data-aos','fade-up');
-    div.innerHTML = `<h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
+    div.innerHTML = `
+      <h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
       <p class='text-sm text-gray-600'><strong>Date:</strong> ${e.date}</p>
       <p class='text-sm text-gray-600'><strong>Location:</strong> ${e.location}</p>
       <p class='text-gray-700 mb-3'>${e.description}</p>
-      <div class='flex justify-end'><button onclick='deleteEvent(${idx})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button></div>`;
+      <div class='flex justify-end'>
+        <button onclick="requireAdmin(()=>{ if(confirm('Are you sure you want to delete this event?')) deleteEvent(${idx}) })" class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button>
+      </div>`;
     eventList.appendChild(div);
   });
 }
 
-window.deleteEvent = function(idx){ adminAction(()=>{ events.splice(idx,1); localStorage.setItem('events',JSON.stringify(events)); displayEvents(document.getElementById('searchInput').value); }); }
+function deleteEvent(idx){
+  events.splice(idx,1);
+  localStorage.setItem('events', JSON.stringify(events));
+  displayEvents(document.getElementById('searchInput').value);
+}
 
+function displayBusinesses(filter=''){
+  const businessList = document.getElementById('businessList');
+  businessList.innerHTML = '';
+  businesses.filter(b=>b.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach((b, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'p-4 bg-white shadow rounded business-card';
+    div.setAttribute('data-aos','fade-up');
+    div.innerHTML = `
+      <h3 class='text-xl font-semibold'>${b.name}</h3>
+      <p>${b.type} • ${b.location}</p>
+      <p>${b.contact}</p>
+      <p>${b.email||''}</p>
+      <p>${b.description}</p>
+      <div class='flex justify-end'>
+        <button onclick="requireAdmin(()=>{ if(confirm('Are you sure you want to delete this business?')) deleteBusiness(${idx}) })" class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button>
+      </div>`;
+    businessList.appendChild(div);
+  });
+}
+
+function deleteBusiness(idx){
+  businesses.splice(idx,1);
+  localStorage.setItem('businesses', JSON.stringify(businesses));
+  displayBusinesses(document.getElementById('searchInput').value);
+}
+
+// Forms
 document.getElementById('eventForm').addEventListener('submit', e=>{
   e.preventDefault();
-  adminAction(()=>{
+  requireAdmin(()=>{
     events.push({
       name: e.target.eventName.value,
       date: e.target.eventDate.value,
@@ -143,23 +191,9 @@ document.getElementById('eventForm').addEventListener('submit', e=>{
   });
 });
 
-function displayBusinesses(filter=''){
-  const businessList = document.getElementById('businessList'); businessList.innerHTML = '';
-  businesses.filter(b=>b.name.toLowerCase().includes(filter.toLowerCase())).forEach((b,idx)=>{
-    const div = document.createElement('div');
-    div.className = 'p-4 bg-white shadow rounded business-card';
-    div.setAttribute('data-aos','fade-up');
-    div.innerHTML = `<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.email||''}</p><p>${b.description}</p>
-      <div class='flex justify-end'><button onclick='deleteBusiness(${idx})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button></div>`;
-    businessList.appendChild(div);
-  });
-}
-
-window.deleteBusiness = function(idx){ adminAction(()=>{ businesses.splice(idx,1); localStorage.setItem('businesses',JSON.stringify(businesses)); displayBusinesses(document.getElementById('searchInput').value); }); }
-
 document.getElementById('businessForm').addEventListener('submit', e=>{
   e.preventDefault();
-  adminAction(()=>{
+  requireAdmin(()=>{
     businesses.push({
       name: e.target.businessName.value,
       type: e.target.businessType.value,
@@ -174,34 +208,16 @@ document.getElementById('businessForm').addEventListener('submit', e=>{
   });
 });
 
-// Filter/Search
+// Search
 document.getElementById('searchInput').addEventListener('input', e=>{
-  const term = e.target.value;
+  const term = e.target.value.toLowerCase();
   displayEvents(term);
   displayBusinesses(term);
 });
 
-// Logout Button
-const logoutBtn = document.createElement('button');
-logoutBtn.textContent = "Logout Admin";
-logoutBtn.className = "fixed top-4 right-4 bg-red-600 text-white px-3 py-1 rounded hidden";
-document.body.appendChild(logoutBtn);
-
-logoutBtn.addEventListener('click', ()=>{
-  signOut(auth).then(()=>{ alert('Admin logged out'); updateUI(); });
-});
-
-onAuthStateChanged(auth,user=>{
-  if(user){ logoutBtn.classList.remove('hidden'); } else { logoutBtn.classList.add('hidden'); }
-});
-
-function updateUI(){
-  displayEvents(document.getElementById('searchInput').value);
-  displayBusinesses(document.getElementById('searchInput').value);
-}
-
-AOS.init();
-updateUI();
+// Initial display
+displayEvents();
+displayBusinesses();
 </script>
 </body>
-  </html>
+</html>
