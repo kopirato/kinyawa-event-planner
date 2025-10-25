@@ -7,11 +7,27 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @keyframes neonPulse {
+      0%, 100% {
+        box-shadow: 0 0 5px #16a34a, 0 0 10px #16a34a, 0 0 20px #16a34a;
+      }
+      50% {
+        box-shadow: 0 0 15px #16a34a, 0 0 30px #16a34a, 0 0 45px #16a34a;
+      }
+    }
+    .glow-active {
+      animation: neonPulse 2s infinite;
+    }
+    .hover-glow:hover {
+      box-shadow: 0 0 12px #16a34a, 0 0 20px #16a34a;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-  <!-- Hero Section -->
+  <!-- Hero -->
   <section class="relative h-[50vh] flex items-center justify-center text-center bg-cover bg-center" style="background-image: url('kinyawa.png');">
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative z-10 text-white" data-aos="fade-up">
@@ -20,9 +36,31 @@
     </div>
   </section>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <main class="max-w-5xl mx-auto p-6">
     <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
+
+    <!-- Filter Bar -->
+    <div class="flex flex-col md:flex-row md:items-center md:space-x-3 space-y-3 md:space-y-0 mb-4">
+      <input type="text" id="searchInput" placeholder="Search by event name or location" class="w-full md:w-1/2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400" />
+      <select id="monthFilter" class="w-full md:w-1/3 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400">
+        <option value="">Filter by Month</option>
+        <option value="0">January</option>
+        <option value="1">February</option>
+        <option value="2">March</option>
+        <option value="3">April</option>
+        <option value="4">May</option>
+        <option value="5">June</option>
+        <option value="6">July</option>
+        <option value="7">August</option>
+        <option value="8">September</option>
+        <option value="9">October</option>
+        <option value="10">November</option>
+        <option value="11">December</option>
+      </select>
+      <button id="clearFilters" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition duration-200 hover-glow">Clear Filters</button>
+    </div>
+
     <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
     <form id="eventForm" class="mt-6 space-y-3">
@@ -55,30 +93,47 @@
 
   <script>
     AOS.init();
-
     const allowedNumbers = ["0724484459", "0742147197"];
 
-    function checkAccess() {
-      const phone = prompt("Enter your phone number to proceed:");
-      if (allowedNumbers.includes(phone)) {
-        return true;
+    function authorize(action, callback) {
+      const phone = prompt(`🔒 ${action}\nPlease enter your phone number to confirm:`);
+      if (allowedNumbers.includes(phone?.trim())) {
+        callback(true);
       } else {
-        alert("Access denied! You are not authorized to perform this action.");
-        return false;
+        alert("🚫 Access denied! You are not authorized to perform this action.");
+        callback(false);
       }
     }
 
     const eventForm = document.getElementById('eventForm');
     const eventList = document.getElementById('eventList');
+    const searchInput = document.getElementById('searchInput');
+    const monthFilter = document.getElementById('monthFilter');
+    const clearFilters = document.getElementById('clearFilters');
     let events = JSON.parse(localStorage.getItem('events')) || [];
 
     function displayEvents() {
       eventList.innerHTML = '';
-      events.sort((a, b) => new Date(a.date) - new Date(b.date));
-      events.forEach((e, index) => {
+      let filtered = [...events];
+
+      const searchTerm = searchInput.value.toLowerCase();
+      if (searchTerm) {
+        filtered = filtered.filter(e =>
+          e.name.toLowerCase().includes(searchTerm) ||
+          e.location.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      const selectedMonth = monthFilter.value;
+      if (selectedMonth !== '') {
+        filtered = filtered.filter(e => new Date(e.date).getMonth() == selectedMonth);
+      }
+
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      filtered.forEach((e, index) => {
         const div = document.createElement('div');
         div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300';
-        div.setAttribute('data-aos', 'fade-up');
         div.innerHTML = `
           <div class='mb-3'>
             <h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
@@ -92,33 +147,52 @@
         `;
         eventList.appendChild(div);
       });
+      toggleGlow();
     }
+
+    function toggleGlow() {
+      if (searchInput.value || monthFilter.value) {
+        clearFilters.classList.add('glow-active');
+      } else {
+        clearFilters.classList.remove('glow-active');
+      }
+    }
+
+    clearFilters.addEventListener('click', () => {
+      searchInput.value = '';
+      monthFilter.value = '';
+      displayEvents();
+    });
 
     function attemptDeleteEvent(index) {
-      if (checkAccess()) deleteEvent(index);
-    }
-
-    function deleteEvent(index) {
-      events.splice(index, 1);
-      localStorage.setItem('events', JSON.stringify(events));
-      displayEvents();
+      authorize("Delete Event", (granted) => {
+        if (granted) {
+          events.splice(index, 1);
+          localStorage.setItem('events', JSON.stringify(events));
+          displayEvents();
+        }
+      });
     }
 
     eventForm.addEventListener('submit', e => {
       e.preventDefault();
-      if (!checkAccess()) return;
-      const newEvent = {
-        name: eventForm.eventName.value,
-        date: eventForm.eventDate.value,
-        location: eventForm.eventLocation.value,
-        description: eventForm.eventDescription.value
-      };
-      events.push(newEvent);
-      localStorage.setItem('events', JSON.stringify(events));
-      eventForm.reset();
-      displayEvents();
+      authorize("Add Event", (granted) => {
+        if (!granted) return;
+        const newEvent = {
+          name: eventForm.eventName.value,
+          date: eventForm.eventDate.value,
+          location: eventForm.eventLocation.value,
+          description: eventForm.eventDescription.value
+        };
+        events.push(newEvent);
+        localStorage.setItem('events', JSON.stringify(events));
+        eventForm.reset();
+        displayEvents();
+      });
     });
 
+    searchInput.addEventListener('input', displayEvents);
+    monthFilter.addEventListener('change', displayEvents);
     displayEvents();
 
     const businessForm = document.getElementById('businessForm');
@@ -144,29 +218,31 @@
     }
 
     function attemptDeleteBusiness(index) {
-      if (checkAccess()) deleteBusiness(index);
-    }
-
-    function deleteBusiness(index) {
-      businesses.splice(index, 1);
-      localStorage.setItem('businesses', JSON.stringify(businesses));
-      displayBusinesses();
+      authorize("Delete Business", (granted) => {
+        if (granted) {
+          businesses.splice(index, 1);
+          localStorage.setItem('businesses', JSON.stringify(businesses));
+          displayBusinesses();
+        }
+      });
     }
 
     businessForm.addEventListener('submit', e => {
       e.preventDefault();
-      if (!checkAccess()) return;
-      const newBusiness = {
-        name: businessForm.businessName.value,
-        type: businessForm.businessType.value,
-        location: businessForm.businessLocation.value,
-        contact: businessForm.businessContact.value,
-        description: businessForm.businessDescription.value
-      };
-      businesses.push(newBusiness);
-      localStorage.setItem('businesses', JSON.stringify(businesses));
-      businessForm.reset();
-      displayBusinesses();
+      authorize("Add Business", (granted) => {
+        if (!granted) return;
+        const newBusiness = {
+          name: businessForm.businessName.value,
+          type: businessForm.businessType.value,
+          location: businessForm.businessLocation.value,
+          contact: businessForm.businessContact.value,
+          description: businessForm.businessDescription.value
+        };
+        businesses.push(newBusiness);
+        localStorage.setItem('businesses', JSON.stringify(businesses));
+        businessForm.reset();
+        displayBusinesses();
+      });
     });
 
     displayBusinesses();
