@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -10,67 +9,73 @@
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-50 text-gray-800">  <!-- Hero Section -->  <section class="relative h-[50vh] flex items-center justify-center text-center bg-cover bg-center" style="background-image: url('kinyawa.png');">
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Hero Section -->
+  <section class="relative h-[50vh] flex items-center justify-center text-center bg-cover bg-center" style="background-image: url('kinyawa.png');">
     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
     <div class="relative z-10 text-white" data-aos="fade-up">
       <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide mb-2">KINYAWA NANYORR</h1>
       <p class="text-lg md:text-xl font-light">Uniting Our Community Through Events & Local Business</p>
     </div>
-  </section>  <!-- Main Content -->  <main class="max-w-5xl mx-auto p-6">
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto p-6">
     <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
-    <input type="text" id="filterInput" placeholder="Search events..." class="w-full p-2 mb-4 border rounded" />
-    <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div><form id="eventForm" class="mt-6 space-y-3">
-  <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
-  <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
-  <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
-  <textarea id="eventDescription" placeholder="Description" class="w-full p-2 border rounded"></textarea>
-  <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Event</button>
-</form>
+    <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-<h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
-<div id="businessList" class="grid gap-4"></div>
+    <form id="eventForm" class="mt-6 space-y-3">
+      <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
+      <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
+      <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
+      <textarea id="eventDescription" placeholder="Description" class="w-full p-2 border rounded"></textarea>
+      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add Event</button>
+    </form>
 
-<form id="businessForm" class="mt-6 space-y-3">
-  <input type="text" id="businessName" placeholder="Business Name" class="w-full p-2 border rounded" required />
-  <input type="text" id="businessType" placeholder="Business Type (e.g., salon, shop)" class="w-full p-2 border rounded" />
-  <input type="text" id="businessLocation" placeholder="Location" class="w-full p-2 border rounded" />
-  <input type="text" id="businessContact" placeholder="Contact Info" class="w-full p-2 border rounded" />
-  <textarea id="businessDescription" placeholder="Short Description" class="w-full p-2 border rounded"></textarea>
-  <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Add Business</button>
-</form>
+    <h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
+    <div id="businessList" class="grid gap-4"></div>
 
-  </main>  <!-- Footer -->  <footer class="bg-green-700 text-white text-center py-6 mt-10">
-    <p class="text-lg font-semibold">Proudly created by Seltec Technologies</p>
-    <p class="text-sm">📞 0742147197 | ✉️ <a href="mailto:davidkop18@gmail.com" class="underline">davidkop18@gmail.com</a></p>
-    <p class="text-sm">🌐 <a href="https://kopirato.github.io/Seltec/" class="underline" target="_blank">https://kopirato.github.io/Seltec/</a></p>
-  </footer>  <script>
+    <form id="businessForm" class="mt-6 space-y-3">
+      <input type="text" id="businessName" placeholder="Business Name" class="w-full p-2 border rounded" required />
+      <input type="text" id="businessType" placeholder="Business Type (e.g., salon, shop)" class="w-full p-2 border rounded" />
+      <input type="text" id="businessLocation" placeholder="Location" class="w-full p-2 border rounded" />
+      <input type="text" id="businessContact" placeholder="Contact Info" class="w-full p-2 border rounded" />
+      <textarea id="businessDescription" placeholder="Short Description" class="w-full p-2 border rounded"></textarea>
+      <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Add Business</button>
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-200 mt-10 py-6 text-center">
+    <p class="text-sm">Proudly created by <span class="font-semibold">Seltec Technologies</span></p>
+    <p class="text-sm">📞 0742147197 | ✉️ davidkop18@gmail.com</p>
+    <a href="https://kopirato.github.io/Seltec/" class="text-green-400 hover:text-green-500 text-sm" target="_blank">https://kopirato.github.io/Seltec/</a>
+  </footer>
+
+  <script>
     AOS.init();
 
     const allowedNumbers = ["0724484459", "0742147197"];
 
-    function authorize() {
-      const phone = prompt('Enter your phone number to continue:');
+    function checkAccess() {
+      const phone = prompt("Enter your phone number to proceed:");
       if (allowedNumbers.includes(phone)) {
         return true;
       } else {
-        alert('You’re not authorized to make changes.');
+        alert("Access denied! You are not authorized to perform this action.");
         return false;
       }
     }
 
     const eventForm = document.getElementById('eventForm');
     const eventList = document.getElementById('eventList');
-    const filterInput = document.getElementById('filterInput');
     let events = JSON.parse(localStorage.getItem('events')) || [];
 
-    function displayEvents(filter = '') {
+    function displayEvents() {
       eventList.innerHTML = '';
-      const filteredEvents = events.filter(e =>
-        e.name.toLowerCase().includes(filter.toLowerCase()) ||
-        e.location.toLowerCase().includes(filter.toLowerCase())
-      );
-      filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-      filteredEvents.forEach((e, index) => {
+      events.sort((a, b) => new Date(a.date) - new Date(b.date));
+      events.forEach((e, index) => {
         const div = document.createElement('div');
         div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300';
         div.setAttribute('data-aos', 'fade-up');
@@ -82,23 +87,26 @@
           </div>
           <p class='text-gray-700 mb-3'>${e.description}</p>
           <div class='flex justify-end'>
-            <button onclick='deleteEvent(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
+            <button onclick='attemptDeleteEvent(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
           </div>
         `;
         eventList.appendChild(div);
       });
     }
 
+    function attemptDeleteEvent(index) {
+      if (checkAccess()) deleteEvent(index);
+    }
+
     function deleteEvent(index) {
-      if (!authorize()) return;
       events.splice(index, 1);
       localStorage.setItem('events', JSON.stringify(events));
-      displayEvents(filterInput.value);
+      displayEvents();
     }
 
     eventForm.addEventListener('submit', e => {
       e.preventDefault();
-      if (!authorize()) return;
+      if (!checkAccess()) return;
       const newEvent = {
         name: eventForm.eventName.value,
         date: eventForm.eventDate.value,
@@ -108,10 +116,8 @@
       events.push(newEvent);
       localStorage.setItem('events', JSON.stringify(events));
       eventForm.reset();
-      displayEvents(filterInput.value);
+      displayEvents();
     });
-
-    filterInput.addEventListener('input', e => displayEvents(e.target.value));
 
     displayEvents();
 
@@ -130,15 +136,18 @@
           <p>${b.contact}</p>
           <p>${b.description}</p>
           <div class='flex justify-end mt-2'>
-            <button onclick='deleteBusiness(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
+            <button onclick='attemptDeleteBusiness(${index})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition'>Delete</button>
           </div>
         `;
         businessList.appendChild(div);
       });
     }
 
+    function attemptDeleteBusiness(index) {
+      if (checkAccess()) deleteBusiness(index);
+    }
+
     function deleteBusiness(index) {
-      if (!authorize()) return;
       businesses.splice(index, 1);
       localStorage.setItem('businesses', JSON.stringify(businesses));
       displayBusinesses();
@@ -146,7 +155,7 @@
 
     businessForm.addEventListener('submit', e => {
       e.preventDefault();
-      if (!authorize()) return;
+      if (!checkAccess()) return;
       const newBusiness = {
         name: businessForm.businessName.value,
         type: businessForm.businessType.value,
@@ -161,5 +170,6 @@
     });
 
     displayBusinesses();
-  </script></body>
+  </script>
+</body>
 </html>
