@@ -8,15 +8,13 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 <style>
-/* Neon pulsing glow effect for buttons */
 @keyframes neonPulse {
   0%,100%{box-shadow:0 0 5px #16a34a,0 0 10px #16a34a,0 0 20px #16a34a;}
   50%{box-shadow:0 0 15px #16a34a,0 0 30px #16a34a,0 0 45px #16a34a;}
 }
 .glow-active {animation: neonPulse 2s infinite;}
-.hover-glow:hover {box-shadow:0 0 12px #16a34a,0 0 20px #16a34a; transition:box-shadow 0.3s ease-in-out;}
-.business-card, .event-card {transition:box-shadow 0.3s ease-in-out,transform 0.3s ease-in-out;}
-.business-card:hover, .event-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a,0 0 30px #16a34a;transform:translateY(-2px);}
+.business-card, .event-card {transition:box-shadow 0.3s ease, transform 0.3s ease;}
+.business-card:hover, .event-card:hover {box-shadow:0 0 10px #16a34a,0 0 20px #16a34a;transform:translateY(-2px);}
 </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -32,7 +30,11 @@
 
 <main class="max-w-5xl mx-auto p-6">
 
-<!-- Events Section -->
+<!-- Search Filter -->
+<div class="mb-6">
+  <input type="text" id="searchInput" placeholder="Search events or businesses..." class="w-full p-2 border rounded" />
+</div>
+
 <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
 <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
 <form id="eventForm" class="mt-6 space-y-3">
@@ -43,7 +45,6 @@
   <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded glow-active">Add Event</button>
 </form>
 
-<!-- Businesses Section -->
 <h2 class="text-2xl font-bold mt-10 mb-4">Local Businesses</h2>
 <div id="businessList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
 <form id="businessForm" class="mt-6 space-y-3">
@@ -57,7 +58,6 @@
 </form>
 </main>
 
-<!-- Footer -->
 <footer class="bg-gray-900 text-gray-200 mt-10 py-6 text-center">
   <p class="text-sm">Proudly created by <span class="font-semibold">Seltec Technologies</span></p>
   <p class="text-sm">📞 0742147197 | ✉️ <a href="mailto:davidkop18@gmail.com" class="underline">davidkop18@gmail.com</a></p>
@@ -79,7 +79,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyC62Xj__IC8udCYl0iz92DqSXbM5UB1kAA",
   authDomain: "kinyawaeventplanner.firebaseapp.com",
@@ -89,11 +88,9 @@ const firebaseConfig = {
   appId: "1:879245734617:web:ea51cfdbfae5ab6f4b44c8"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Admin modal elements
 const loginModal = document.getElementById('loginModal');
 const loginBtn = document.getElementById('loginBtn');
 const loginEmail = document.getElementById('loginEmail');
@@ -105,24 +102,22 @@ function hideLoginModal(){ loginModal.classList.add('hidden'); loginError.classL
 
 loginBtn.addEventListener('click', ()=>{
   signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value.trim())
-    .then(()=>{ hideLoginModal(); alert('Admin logged in!'); })
+    .then(()=>{ hideLoginModal(); alert('Admin logged in!'); updateUI(); })
     .catch(err=>{ loginError.textContent=err.message; loginError.classList.remove('hidden'); });
 });
 
+let events = JSON.parse(localStorage.getItem('events')) || [];
+let businesses = JSON.parse(localStorage.getItem('businesses')) || [];
+
 function adminAction(callback){ if(auth.currentUser) callback(); else showLoginModal(); }
 
-// Events
-const eventForm = document.getElementById('eventForm');
-let events = JSON.parse(localStorage.getItem('events'))||[];
-
-function displayEvents(){
-  const eventList = document.getElementById('eventList'); eventList.innerHTML='';
-  events.sort((a,b)=>new Date(a.date)-new Date(b.date));
-  events.forEach((e,idx)=>{
-    const div=document.createElement('div');
-    div.className='p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
+function displayEvents(filter=''){
+  const eventList = document.getElementById('eventList'); eventList.innerHTML = '';
+  events.filter(e=>e.name.toLowerCase().includes(filter.toLowerCase())).sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach((e,idx)=>{
+    const div = document.createElement('div');
+    div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow event-card';
     div.setAttribute('data-aos','fade-up');
-    div.innerHTML=`<h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
+    div.innerHTML = `<h3 class='text-xl font-semibold text-green-700 mb-1'>${e.name}</h3>
       <p class='text-sm text-gray-600'><strong>Date:</strong> ${e.date}</p>
       <p class='text-sm text-gray-600'><strong>Location:</strong> ${e.location}</p>
       <p class='text-gray-700 mb-3'>${e.description}</p>
@@ -130,36 +125,83 @@ function displayEvents(){
     eventList.appendChild(div);
   });
 }
-function deleteEvent(idx){ adminAction(()=>{ events.splice(idx,1); localStorage.setItem('events',JSON.stringify(events)); displayEvents(); }); }
-eventForm.addEventListener('submit',e=>{ e.preventDefault(); adminAction(()=>{ events.push({name:eventForm.eventName.value,date:eventForm.eventDate.value,location:eventForm.eventLocation.value,description:eventForm.eventDescription.value}); localStorage.setItem('events',JSON.stringify(events)); displayEvents(); eventForm.reset(); }); });
-displayEvents();
 
-// Businesses
-const businessForm=document.getElementById('businessForm');
-let businesses=JSON.parse(localStorage.getItem('businesses'))||[];
+window.deleteEvent = function(idx){ adminAction(()=>{ events.splice(idx,1); localStorage.setItem('events',JSON.stringify(events)); displayEvents(document.getElementById('searchInput').value); }); }
 
-function displayBusinesses(){
-  const businessList=document.getElementById('businessList'); businessList.innerHTML='';
-  businesses.forEach((b,idx)=>{
-    const div=document.createElement('div');
-    div.className='p-4 bg-white shadow rounded business-card';
+document.getElementById('eventForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  adminAction(()=>{
+    events.push({
+      name: e.target.eventName.value,
+      date: e.target.eventDate.value,
+      location: e.target.eventLocation.value,
+      description: e.target.eventDescription.value
+    });
+    localStorage.setItem('events', JSON.stringify(events));
+    displayEvents(document.getElementById('searchInput').value);
+    e.target.reset();
+  });
+});
+
+function displayBusinesses(filter=''){
+  const businessList = document.getElementById('businessList'); businessList.innerHTML = '';
+  businesses.filter(b=>b.name.toLowerCase().includes(filter.toLowerCase())).forEach((b,idx)=>{
+    const div = document.createElement('div');
+    div.className = 'p-4 bg-white shadow rounded business-card';
     div.setAttribute('data-aos','fade-up');
-    div.innerHTML=`<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.email||''}</p><p>${b.description}</p>
+    div.innerHTML = `<h3 class='text-xl font-semibold'>${b.name}</h3><p>${b.type} • ${b.location}</p><p>${b.contact}</p><p>${b.email||''}</p><p>${b.description}</p>
       <div class='flex justify-end'><button onclick='deleteBusiness(${idx})' class='bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm'>Delete</button></div>`;
     businessList.appendChild(div);
   });
 }
-function deleteBusiness(idx){ adminAction(()=>{ businesses.splice(idx,1); localStorage.setItem('businesses',JSON.stringify(businesses)); displayBusinesses(); }); }
-businessForm.addEventListener('submit',e=>{ e.preventDefault(); adminAction(()=>{ businesses.push({name:businessForm.businessName.value,type:businessForm.businessType.value,location:businessForm.businessLocation.value,contact:businessForm.businessContact.value,email:businessForm.businessEmail.value,description:businessForm.businessDescription.value}); localStorage.setItem('businesses',JSON.stringify(businesses)); displayBusinesses(); businessForm.reset(); }); });
-displayBusinesses();
 
-// Admin Logout
-const logoutBtn=document.createElement('button'); logoutBtn.textContent="Logout"; logoutBtn.className="fixed top-4 right-4 bg-red-600 text-white px-3 py-1 rounded hidden"; document.body.appendChild(logoutBtn);
-onAuthStateChanged(auth,user=>{ if(user) logoutBtn.classList.remove('hidden'); else logoutBtn.classList.add('hidden'); });
-logoutBtn.addEventListener('click',()=>{ signOut(auth).then(()=>alert('Admin logged out')); });
+window.deleteBusiness = function(idx){ adminAction(()=>{ businesses.splice(idx,1); localStorage.setItem('businesses',JSON.stringify(businesses)); displayBusinesses(document.getElementById('searchInput').value); }); }
 
-// Initialize AOS
+document.getElementById('businessForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  adminAction(()=>{
+    businesses.push({
+      name: e.target.businessName.value,
+      type: e.target.businessType.value,
+      location: e.target.businessLocation.value,
+      contact: e.target.businessContact.value,
+      email: e.target.businessEmail.value,
+      description: e.target.businessDescription.value
+    });
+    localStorage.setItem('businesses', JSON.stringify(businesses));
+    displayBusinesses(document.getElementById('searchInput').value);
+    e.target.reset();
+  });
+});
+
+// Filter/Search
+document.getElementById('searchInput').addEventListener('input', e=>{
+  const term = e.target.value;
+  displayEvents(term);
+  displayBusinesses(term);
+});
+
+// Logout Button
+const logoutBtn = document.createElement('button');
+logoutBtn.textContent = "Logout Admin";
+logoutBtn.className = "fixed top-4 right-4 bg-red-600 text-white px-3 py-1 rounded hidden";
+document.body.appendChild(logoutBtn);
+
+logoutBtn.addEventListener('click', ()=>{
+  signOut(auth).then(()=>{ alert('Admin logged out'); updateUI(); });
+});
+
+onAuthStateChanged(auth,user=>{
+  if(user){ logoutBtn.classList.remove('hidden'); } else { logoutBtn.classList.add('hidden'); }
+});
+
+function updateUI(){
+  displayEvents(document.getElementById('searchInput').value);
+  displayBusinesses(document.getElementById('searchInput').value);
+}
+
 AOS.init();
+updateUI();
 </script>
 </body>
-    </html>
+  </html>
