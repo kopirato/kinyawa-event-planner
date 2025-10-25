@@ -17,12 +17,9 @@
       <p class="text-lg md:text-xl font-light">Uniting Our Community Through Events & Local Business</p>
     </div>
   </section>  <!-- Main Content -->  <main class="max-w-5xl mx-auto p-6">
-    <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2><!-- Filter Input -->
-<input type="text" id="filterInput" placeholder="Search events by name or location..." class="w-full p-2 border rounded mb-4" />
-
-<div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-<form id="eventForm" class="mt-6 space-y-3">
+    <h2 class="text-2xl font-bold mb-4">Upcoming Events</h2>
+    <input type="text" id="filterInput" placeholder="Search events..." class="w-full p-2 mb-4 border rounded" />
+    <div id="eventList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div><form id="eventForm" class="mt-6 space-y-3">
   <input type="text" id="eventName" placeholder="Event Name" class="w-full p-2 border rounded" required />
   <input type="date" id="eventDate" class="w-full p-2 border rounded" required />
   <input type="text" id="eventLocation" placeholder="Location" class="w-full p-2 border rounded" />
@@ -42,7 +39,11 @@
   <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">Add Business</button>
 </form>
 
-  </main>  <script>
+  </main>  <!-- Footer -->  <footer class="bg-green-700 text-white text-center py-6 mt-10">
+    <p class="text-lg font-semibold">Proudly created by Seltec Technologies</p>
+    <p class="text-sm">📞 0742147197 | ✉️ <a href="mailto:davidkop18@gmail.com" class="underline">davidkop18@gmail.com</a></p>
+    <p class="text-sm">🌐 <a href="https://kopirato.github.io/Seltec/" class="underline" target="_blank">https://kopirato.github.io/Seltec/</a></p>
+  </footer>  <script>
     AOS.init();
 
     const eventForm = document.getElementById('eventForm');
@@ -52,13 +53,11 @@
 
     function displayEvents(filter = '') {
       eventList.innerHTML = '';
-      const filteredEvents = events.filter(e => 
-        e.name.toLowerCase().includes(filter.toLowerCase()) || 
+      const filteredEvents = events.filter(e =>
+        e.name.toLowerCase().includes(filter.toLowerCase()) ||
         e.location.toLowerCase().includes(filter.toLowerCase())
       );
-
       filteredEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
-
       filteredEvents.forEach((e, index) => {
         const div = document.createElement('div');
         div.className = 'p-5 bg-gradient-to-br from-green-50 to-white rounded-2xl shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300';
@@ -84,10 +83,6 @@
       displayEvents(filterInput.value);
     }
 
-    filterInput.addEventListener('input', e => {
-      displayEvents(e.target.value);
-    });
-
     eventForm.addEventListener('submit', e => {
       e.preventDefault();
       const newEvent = {
@@ -101,6 +96,8 @@
       eventForm.reset();
       displayEvents(filterInput.value);
     });
+
+    filterInput.addEventListener('input', e => displayEvents(e.target.value));
 
     displayEvents();
 
@@ -135,4 +132,4 @@
 
     displayBusinesses();
   </script></body>
-    </html>
+</html>
